@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<script src="math.js"></script>
+<script src="draw.js"></script>
+
+<canvas id="draw" height="600" width="600"></canvas>
+
+<div id="controls">
+  <div style="display: inline-block">
+    <div id="p">
+      P:
+      <input type="number" size="30" id="px" value="-160">
+      <input type="number" size="30" id="py" value="-40">
+    </div>
+
+    <div id="q">
+      Q:
+      <input type="number" size="30" id="qx" value="100">
+      <input type="number" size="30" id="qy" value="120">
+    </div>
+
+    <div id="r">
+      R:
+      <input type="number" size="30" id="rx" value="-30">
+      <input type="number" size="30" id="ry" value="-90">
+    </div>
+  </div>
+
+  <div style="display: inline-block">
+    <div id="pq">
+      PQ:
+      <input type="number" min="0" max="6.283185307179586" step="0.01" value="5.01" id="pq-start">
+      <input type="number" min="0" max="6.283185307179586" step="0.01" value="5.51" id="pq-stop">
+    </div>
+
+    <div id="qr">
+      QR:
+      <input type="number" min="0" max="6.283185307179586" step="0.01" value="2.49" id="qr-start">
+      <input type="number" min="0" max="6.283185307179586" step="0.01" value="2.69" id="qr-stop">
+    </div>
+
+    <div id="rp">
+      RP:
+      <input type="number" min="0" max="6.283185307179586" step="0.01" value="0.78" id="rp-start">
+      <input type="number" min="0" max="6.283185307179586" step="0.01" value="1.63" id="rp-stop">
+    </div>
+  </div>
+
+  <div style="display: inline-block">
+    <div id="base-circle">
+      Base Radius:
+      <input type="number" min="100" max="1000" value="200" id="base-radius">
+    </div>
+
+    <div id="stroke">
+      Stroke:
+      <input type="number" min="1" max="20" value="9" id="stroke-width">
+    </div>
+  </div>
+</div>
+
+<button id="drawit">Draw!</button>
+
+<script>
+var canvas = document.querySelector('#draw');
+var height = canvas.height;
+var width = canvas.width;
+var ctx = canvas.getContext('2d');
+ctx.translate(width / 2, height / 2);
+
+function clearIt() {
+  ctx.fillStyle = 'white';
+  ctx.fillRect(-width / 2, -height / 2, width, height);
+  ctx.fillStyle = 'black';
+}
+
+function gV(i) {
+  return Number(document.getElementById(i).value);
+}
+
+function drawIt() {
+  var baseCircle = new Circle(new Point(0, 0), gV('base-radius'));
+
+  ctx.lineWidth = 1;
+  //drawCircle(ctx, baseCircle);
+  ctx.lineWidth = gV('stroke-width');
+
+  var p = new Point(gV('px'), gV('py'));
+  drawPoint(ctx, p);
+
+  var q = new Point(gV('qx'), gV('qy'));
+  drawPoint(ctx, q);
+
+  var r = new Point(gV('rx'), gV('ry'));
+  drawPoint(ctx, r);
+
+  var pp = inversion(baseCircle, p);
+  var qq = inversion(baseCircle, q);
+  var rr = inversion(baseCircle, r);
+
+  var circPQ = Circle.fromPoints(pp, p, q);
+  var pqStart = gV('pq-start');
+  var pqStop = gV('pq-stop');
+  drawArc(ctx, circPQ, pqStart, pqStop);
+
+  var circQR = Circle.fromPoints(q, r, rr);
+  var qrStart = gV('qr-start');
+  var qrStop = gV('qr-stop');
+  drawArc(ctx, circQR, qrStart, qrStop);
+
+  var circRP = Circle.fromPoints(r, p, rr);
+  var rpStart = gV('rp-start');
+  var rpStop = gV('rp-stop');
+  drawArc(ctx, circRP, rpStart, rpStop);
+}
+
+document.querySelector('#drawit').addEventListener('click', function () {
+  clearIt();
+  drawIt();
+});
+
+Array.from(document.querySelectorAll('input')).forEach(function (el) {
+  console.log(el);
+  el.addEventListener('change', function () {
+    console.log(el, 'changed');
+    clearIt();
+    drawIt();
+  });
+});
+
+drawIt();
+</script>
